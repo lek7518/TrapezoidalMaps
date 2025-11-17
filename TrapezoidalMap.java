@@ -57,4 +57,45 @@ public class TrapezoidalMap {
         //    add info to adjacency matrix
 
     }
+
+    public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
+        // This accounts for inside and verticies, it does not account for edges
+
+        ArrayList<Trapezoid> inTrapezoids = new ArrayList<>();
+
+        // For all trapezoids
+        for (int i = 0; i < trapezoids.size(); i++) {
+            Trapezoid currTrapezoid = trapezoids.get(i);
+
+            // Check if the query point is on the vertex of current trapezoid
+            if ((queryPoint.x == currTrapezoid.bl.x && queryPoint.y == currTrapezoid.bl.y) ||
+                (queryPoint.x == currTrapezoid.tl.x && queryPoint.y == currTrapezoid.tl.y) ||
+                (queryPoint.x == currTrapezoid.tr.x && queryPoint.y == currTrapezoid.tr.y) ||
+                (queryPoint.x == currTrapezoid.br.x && queryPoint.y == currTrapezoid.br.y)) {
+                    inTrapezoids.add(currTrapezoid);
+                    continue;
+            }
+
+            else {
+                // Check if inside the current trapezoid
+                if ((crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
+                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
+                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
+                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0)) {
+                        continue;
+                    }
+                else {
+                    // If none of above are true, then it is inside trapezoid and we can quit
+                    inTrapezoids.add(currTrapezoid);
+                    break;
+                }
+            }
+        }
+
+        return inTrapezoids;
+    } 
+
+    public static double crossProduct(Point a, Point b, Point p) {
+        return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    }
 }
