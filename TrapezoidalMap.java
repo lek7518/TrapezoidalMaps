@@ -79,9 +79,9 @@ public class TrapezoidalMap {
             else {
                 // Check if inside the current trapezoid
                 if ((crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0)) {
+                    (crossProduct(currTrapezoid.tl, currTrapezoid.tr, queryPoint) < 0) ||
+                    (crossProduct(currTrapezoid.tr, currTrapezoid.br, queryPoint) < 0) ||
+                    (crossProduct(currTrapezoid.br, currTrapezoid.bl, queryPoint) < 0)) {
                         continue;
                     }
                 else {
