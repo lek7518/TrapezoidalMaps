@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class TrapezoidalMap {
@@ -14,20 +15,46 @@ public class TrapezoidalMap {
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length != 1){
             System.out.println("Usage: ./TrapezoidalMap \"input.txt\"");
-        } else {
-            File in = new File(args[0]);
-            Scanner scan = new Scanner(new File(args[0]));
-            int n = Integer.parseInt(scan.nextLine());
-            String[] start = scan.nextLine().split(" ");
-            ArrayList<ArrayList<Integer>> matrix = new ArrayList<>();
-            while (scan.hasNextLine()){
-                String[] line = scan.nextLine().split(" ");
-                ArrayList<Integer> i = new ArrayList<>();
-                for(String l : line){
-                    i.add(Integer.parseInt(l));
-                }
-                matrix.add(i);
-            }
+            return;
         }
+
+        Scanner scan = new Scanner(new File(args[0]));
+        int numPts = Integer.parseInt(scan.nextLine());
+        String[] startingBox = scan.nextLine().split(" ");
+        Point[] boundingBox = {
+                new Point(0, Integer.parseInt(startingBox[0]), Integer.parseInt(startingBox[1]), false),
+                new Point(0, Integer.parseInt(startingBox[2]), Integer.parseInt(startingBox[3]), false)
+        };
+
+        List<Segment> segments = new ArrayList<Segment>();
+        int id = 1;
+        while (scan.hasNextLine()){
+            String[] line = scan.nextLine().split(" ");
+            segments.add(new Segment(id,
+                    new Point(id, Integer.parseInt(line[0]), Integer.parseInt(line[1]), true),
+                    new Point(id, Integer.parseInt(line[2]), Integer.parseInt(line[3]), false)));
+            id++;
+        }
+        scan.close();
+
+        int[][] adjMatrix = new int[numPts*4][];
+        List<Trapezoid> trapezoids = new ArrayList<>();
+        Trapezoid box = new Trapezoid(0, boundingBox[0],
+                new Point(0, boundingBox[0].x, boundingBox[1].y, false),
+                boundingBox[1],
+                new Point(0, boundingBox[1].x, boundingBox[0].y, false));
+        trapezoids.add(box);
+        List<Segment> verticalLines = new ArrayList<>();
+        verticalLines.add(new Segment(0, box.bl, box.tl));
+        verticalLines.add(new Segment(0, box.br, box.tr));
+
+
+        //creating the tree
+        //  trapezoid zero is bounding box coordinates
+        //  for each segment, do algorithm
+        //    find what trapezoid starting point is in
+        //    do 4 cases based on if it hits a vertical line
+        //    add info to adjacency matrix
+
     }
 }
