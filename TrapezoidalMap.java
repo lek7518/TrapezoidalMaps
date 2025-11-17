@@ -12,6 +12,26 @@ public class TrapezoidalMap {
     // trapezoid id and 4 Points of a trapezoid in clockwise order, starting at bottom left
     public record Trapezoid (int tid, Point bl, Point tl, Point tr, Point br) {}
 
+    public int getFreshId(){return 0;}
+
+    // Case 1: Start point is in this trapezoid, end point is not in this trapezoid
+    public static void singleStart(Trapezoid inTrap, Segment seg){
+        // current trapezoid replaced with (curr Trap divided by start pt, curr segment)
+        // curr segment gets children (top trap, bottom trap)
+
+        // remove this trapezoid from tree and get parent
+        int trapParent;
+
+    }
+
+    // Case 1.5: Start point is not, but end point is in this trapezoid
+    public static void singleEnd(){}
+    // Case 2: Both start and end point are in this trapezoid
+    public static void bothPts(){}
+    // Case 3: Neither start nor end point are in this trapezoid
+    public static void neitherPts(){}
+
+
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length != 1){
             System.out.println("Usage: ./TrapezoidalMap \"input.txt\"");
