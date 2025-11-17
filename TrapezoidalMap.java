@@ -1,13 +1,15 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class TrapezoidalMap {
     public record Point (int id, int x, int y, boolean isStart){}
 
     public record Segment (int id, Point start, Point end) {}
+
+    // trapezoid id and 4 Points of a trapezoid in clockwise order, starting at bottom left
+    public record Trapezoid (int tid, Point bl, Point tl, Point tr, Point br) {}
 
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length != 1){
