@@ -12,7 +12,12 @@ public class TrapezoidalMap {
     // trapezoid id and 4 Points of a trapezoid in clockwise order, starting at bottom left
     public record Trapezoid (int tid, Point bl, Point tl, Point tr, Point br) {}
 
-    public int getFreshId(){return 0;}
+    public static int currTrapezoidId = 1;
+
+    public int getFreshId(){
+        currTrapezoidId += 1;
+        return currTrapezoidId;
+    }
 
     // Case 1: Start point is in this trapezoid, end point is not in this trapezoid
     public static void singleStart(Trapezoid inTrap, Segment seg){
