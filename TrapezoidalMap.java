@@ -58,23 +58,70 @@ public class TrapezoidalMap {
         scan.close();
 
         int[][] adjMatrix = new int[numPts*4][];
-        List<Trapezoid> trapezoids = new ArrayList<>();
+        ArrayList<Trapezoid> trapezoids = new ArrayList<>();
         Trapezoid box = new Trapezoid(0, boundingBox[0],
                 new Point(0, boundingBox[0].x, boundingBox[1].y, false),
                 boundingBox[1],
                 new Point(0, boundingBox[1].x, boundingBox[0].y, false));
         trapezoids.add(box);
-        List<Segment> verticalLines = new ArrayList<>();
+        ArrayList<Segment> verticalLines = new ArrayList<>();
         verticalLines.add(new Segment(0, box.bl, box.tl));
         verticalLines.add(new Segment(0, box.br, box.tr));
 
 
-        //creating the tree
-        //  trapezoid zero is bounding box coordinates
-        //  for each segment, do algorithm
-        //    find what trapezoid starting point is in
-        //    do 4 cases based on if it hits a vertical line
-        //    add info to adjacency matrix
+        // for each segment, do algorithm
+        for (Segment s : segments) {
+            ArrayList<Trapezoid> startTraps = inWhatTrapezoid(s.start, trapezoids);
+            Trapezoid startT;
+            if (startTraps.size() == 1){
+                startT = startTraps.get(0);
+                if (s.end.x < startT.br.x) {
+                    bothPts();
+                } else {
+                    singleStart(startT, s);
+                    // TODO keep going from here, maybe single start calls next func?
+                }
+            } else {
+                // get the correct trapezoid when there are multiple
+                for (Trapezoid t : startTraps){
+                    if (t.bl.x != s.start.x){
+                        startTraps.remove(t);
+                    }
+                }
+                if (startTraps.size() == 1){
+                    startT = startTraps.get(0);
+                } else {
+                    Trapezoid bottom;
+                    Trapezoid top;
+                    if (startTraps.get(0).tl.y < startTraps.get(1).tl.y){
+                        bottom = startTraps.get(0);
+                        top = startTraps.get(1);
+                    } else {
+                        bottom = startTraps.get(1);
+                        top = startTraps.get(0);
+                    }
+                    double slope = 1.0 * (bottom.br.y -bottom.bl.y) / (bottom.br.x - bottom.bl.x);
+                    double slopeOfS = 1.0 * (s.end.y - s.start.y) / (s.end.x - s.start.x);
+                    if (slope > slopeOfS){
+                        startT = bottom;
+                    } else {
+                        startT = top;
+                    }
+                }
+
+                if (s.end.x < startT.br.x){
+                    singleEnd();
+                } else {
+                    neitherPts();
+                    // TODO same as above, need to keep going from here
+                }
+            }
+
+
+            //    find what trapezoid starting point is in
+            //    do 4 cases based on if it hits a vertical line
+            //    add info to adjacency matrix
+        }
 
     }
 
