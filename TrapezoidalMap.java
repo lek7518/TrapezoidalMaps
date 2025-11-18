@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -12,7 +13,12 @@ public class TrapezoidalMap {
     // trapezoid id and 4 Points of a trapezoid in clockwise order, starting at bottom left
     public record Trapezoid (int tid, Point bl, Point tl, Point tr, Point br) {}
 
-    public int getFreshId(){return 0;}
+    public static int currTrapezoidId = 1;
+
+    public int getFreshId(){
+        currTrapezoidId += 1;
+        return currTrapezoidId;
+    }
 
     // Case 1: Start point is in this trapezoid, end point is not in this trapezoid
     public static void singleStart(Trapezoid inTrap, Segment seg){
@@ -57,7 +63,7 @@ public class TrapezoidalMap {
         }
         scan.close();
 
-        int[][] adjMatrix = new int[numPts*4][];
+        HashMap<String, HashMap<String, Integer>> adjMatrix = new HashMap<>();
         ArrayList<Trapezoid> trapezoids = new ArrayList<>();
         Trapezoid box = new Trapezoid(0, boundingBox[0],
                 new Point(0, boundingBox[0].x, boundingBox[1].y, false),
