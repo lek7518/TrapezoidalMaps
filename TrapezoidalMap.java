@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class TrapezoidalMap {
-    public record Point (int id, int x, int y, boolean isStart){}
+    public record Point (int id, double x, double y, boolean isStart){}
 
     public record Segment (int id, Point start, Point end) {}
 
@@ -15,27 +15,102 @@ public class TrapezoidalMap {
 
     public static int currTrapezoidId = 1;
 
-    public int getFreshId(){
+    public static int getFreshId(){
         currTrapezoidId += 1;
         return currTrapezoidId;
     }
 
+    public static void addToAM(String id, String pid, HashMap<String, ArrayList<String>> adjMatrix){
+        if (!adjMatrix.containsKey(id)){ // todo all should be new, shouldn't need this check
+            adjMatrix.put(id, new ArrayList<>());
+        }
+        adjMatrix.get(id).add(pid);
+    }
+
+    public static double calculateSlope(Point p1, Point p2){
+        return (p2.y - p1.y) / (p2.x - p1.x);
+    }
+
+    public static double calculateY(Point p1, Point p2, double x){
+        double slope = calculateSlope(p1, p2);
+        return slope * (x - p1.x) + p1.y;
+    }
+
+
     // Case 1: Start point is in this trapezoid, end point is not in this trapezoid
-    public static void singleStart(Trapezoid inTrap, Segment seg){
+    public static void singleStart(Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> adjMatrix){
         // current trapezoid replaced with (curr Trap divided by start pt, curr segment)
         // curr segment gets children (top trap, bottom trap)
-
         // remove this trapezoid from tree and get parent
-        int trapParent;
+
+        // replace curr trapezoid with start (P)
+        // trapezoid to left of start is created
+        // to the right of start add S
+        // S children are two trapezoids
 
     }
 
     // Case 1.5: Start point is not, but end point is in this trapezoid
-    public static void singleEnd(){}
+    public static void singleEnd(
+            Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> adjMatrix){}
+
     // Case 2: Both start and end point are in this trapezoid
-    public static void bothPts(){}
+    // Baymax case
+    public static ArrayList<Trapezoid> bothPts(
+            Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> am){
+
+        double tly = calculateY(inTrap.tl, inTrap.tr, seg.start.x);
+        double tr_y = calculateY(inTrap.tl, inTrap.tr, seg.end.x);
+        double bly = calculateY(inTrap.bl, inTrap.br, seg.start.x);
+        double bry = calculateY(inTrap.bl, inTrap.br, seg.end.x);
+
+        // the trapezoid we are currently in will be split into 4 trapezoids
+        String currTid = "T" + inTrap.tid;
+        am.put("P" + seg.start.id, am.get(currTid));
+        am.remove(currTid);
+
+        Trapezoid u = new Trapezoid(getFreshId(),
+                inTrap.bl,
+                inTrap.tl,
+                new Point(0, seg.start.x, tly, false), //todo
+                new Point(0, seg.start.x, bly, false)); //todo
+        addToAM("T" + u.tid, "P" + seg.id, am);
+
+        addToAM("Q" + seg.id, "P" + seg.id, am);
+
+        Trapezoid x = new Trapezoid(getFreshId(),
+                new Point(0, seg.start.x, bry, false),  //todo
+                new Point(0, seg.end.x, tr_y, false), //todo
+                inTrap.tr,
+                inTrap.br);
+        addToAM("T" + x.tid, "Q" + seg.id, am);
+
+        addToAM("S" + seg.id, "Q" + seg.id, am);
+
+        Trapezoid y = new Trapezoid(getFreshId(),
+                seg.start,
+                new Point(0, seg.start.x, tly, false),
+                new Point(0, seg.end.x, tr_y, false),
+                seg.end);
+        addToAM("T"+y.tid, "S" + seg.id, am);
+
+        Trapezoid z = new Trapezoid(getFreshId(),
+                new Point(0, seg.start.x, bly, false),
+                seg.start,
+                seg.end,
+                new Point(0, seg.end.x, bry, false));
+        addToAM("T" + z.tid, "S"+seg.id, am);
+
+        ArrayList<Trapezoid> result = new ArrayList<>();
+        result.add(u);
+        result.add(z);
+        result.add(y);
+        result.add(x);
+        return result;
+    }
+
     // Case 3: Neither start nor end point are in this trapezoid
-    public static void neitherPts(){}
+    public static void neitherPts(Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> adjMatrix){}
 
 
     public static void main(String[] args) throws FileNotFoundException {
@@ -63,7 +138,8 @@ public class TrapezoidalMap {
         }
         scan.close();
 
-        HashMap<String, HashMap<String, Integer>> adjMatrix = new HashMap<>();
+        // id and list of parents
+        HashMap<String, ArrayList<String>> adjMatrix = new HashMap<>();
         ArrayList<Trapezoid> trapezoids = new ArrayList<>();
         Trapezoid box = new Trapezoid(0, boundingBox[0],
                 new Point(0, boundingBox[0].x, boundingBox[1].y, false),
@@ -83,10 +159,10 @@ public class TrapezoidalMap {
                 if (startTraps.size() == 1) {
                     startT = startTraps.get(0);
                     if (s.end.x < startT.br.x) {
-                        bothPts();
+                        bothPts(startT, s, adjMatrix); // TODO add these returned trapezoids to the trapezoid list
                         done = true;
                     } else {
-                        singleStart(startT, s);
+                        singleStart(startT, s, adjMatrix);
                     }
                 } else {
                     // get the correct trapezoid when there are multiple
@@ -107,8 +183,8 @@ public class TrapezoidalMap {
                             bottom = startTraps.get(1);
                             top = startTraps.get(0);
                         }
-                        double slope = 1.0 * (bottom.br.y - bottom.bl.y) / (bottom.br.x - bottom.bl.x);
-                        double slopeOfS = 1.0 * (s.end.y - s.start.y) / (s.end.x - s.start.x);
+                        double slope = calculateSlope(bottom.br, bottom.bl);
+                        double slopeOfS = calculateSlope(s.start, s.end);
                         if (slope > slopeOfS) {
                             startT = bottom;
                         } else {
@@ -117,10 +193,10 @@ public class TrapezoidalMap {
                     }
 
                     if (s.end.x < startT.br.x) {
-                        singleEnd();
+                        singleEnd(startT, s, adjMatrix);
                         done = true;
                     } else {
-                        neitherPts();
+                        neitherPts(startT, s, adjMatrix);
                     }
                 }
 
@@ -135,10 +211,10 @@ public class TrapezoidalMap {
                             if (nextPt.y < t.tl.y && nextPt.y > t.bl.y){
                                 // if end point is in this trapezoid, call that case and break
                                 if (s.end.x < t.br.y){
-                                    singleEnd();
+                                    singleEnd(t, s, adjMatrix);
                                     done = true;
                                 } else { // otherwise call correct case and keep going
-                                    neitherPts();
+                                    neitherPts(t, s, adjMatrix);
                                 }
                                 break;
                             }
