@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -62,7 +63,7 @@ public class TrapezoidalMap {
         }
         scan.close();
 
-        int[][] adjMatrix = new int[numPts*4][];
+        HashMap<String, HashMap<String, Integer>> adjMatrix = new HashMap<>();
         ArrayList<Trapezoid> trapezoids = new ArrayList<>();
         Trapezoid box = new Trapezoid(0, boundingBox[0],
                 new Point(0, boundingBox[0].x, boundingBox[1].y, false),
