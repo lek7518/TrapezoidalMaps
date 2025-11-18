@@ -71,52 +71,74 @@ public class TrapezoidalMap {
 
         // for each segment, do algorithm
         for (Segment s : segments) {
-            ArrayList<Trapezoid> startTraps = inWhatTrapezoid(s.start, trapezoids);
-            Trapezoid startT;
-            if (startTraps.size() == 1){
-                startT = startTraps.get(0);
-                if (s.end.x < startT.br.x) {
-                    bothPts();
-                } else {
-                    singleStart(startT, s);
-                    // TODO keep going from here, maybe single start calls next func?
-                }
-            } else {
-                // get the correct trapezoid when there are multiple
-                for (Trapezoid t : startTraps){
-                    if (t.bl.x != s.start.x){
-                        startTraps.remove(t);
-                    }
-                }
-                if (startTraps.size() == 1){
+            boolean done = false;
+                ArrayList<Trapezoid> startTraps = inWhatTrapezoid(s.start, trapezoids);
+                Trapezoid startT;
+                if (startTraps.size() == 1) {
                     startT = startTraps.get(0);
-                } else {
-                    Trapezoid bottom;
-                    Trapezoid top;
-                    if (startTraps.get(0).tl.y < startTraps.get(1).tl.y){
-                        bottom = startTraps.get(0);
-                        top = startTraps.get(1);
+                    if (s.end.x < startT.br.x) {
+                        bothPts();
+                        done = true;
                     } else {
-                        bottom = startTraps.get(1);
-                        top = startTraps.get(0);
+                        singleStart(startT, s);
                     }
-                    double slope = 1.0 * (bottom.br.y -bottom.bl.y) / (bottom.br.x - bottom.bl.x);
-                    double slopeOfS = 1.0 * (s.end.y - s.start.y) / (s.end.x - s.start.x);
-                    if (slope > slopeOfS){
-                        startT = bottom;
+                } else {
+                    // get the correct trapezoid when there are multiple
+                    for (Trapezoid t : startTraps) {
+                        if (t.bl.x != s.start.x) {
+                            startTraps.remove(t);
+                        }
+                    }
+                    if (startTraps.size() == 1) {
+                        startT = startTraps.get(0);
                     } else {
-                        startT = top;
+                        Trapezoid bottom;
+                        Trapezoid top;
+                        if (startTraps.get(0).tl.y < startTraps.get(1).tl.y) {
+                            bottom = startTraps.get(0);
+                            top = startTraps.get(1);
+                        } else {
+                            bottom = startTraps.get(1);
+                            top = startTraps.get(0);
+                        }
+                        double slope = 1.0 * (bottom.br.y - bottom.bl.y) / (bottom.br.x - bottom.bl.x);
+                        double slopeOfS = 1.0 * (s.end.y - s.start.y) / (s.end.x - s.start.x);
+                        if (slope > slopeOfS) {
+                            startT = bottom;
+                        } else {
+                            startT = top;
+                        }
+                    }
+
+                    if (s.end.x < startT.br.x) {
+                        singleEnd();
+                        done = true;
+                    } else {
+                        neitherPts();
                     }
                 }
 
-                if (s.end.x < startT.br.x){
-                    singleEnd();
-                } else {
-                    neitherPts();
-                    // TODO same as above, need to keep going from here
-                }
-            }
+                Point nextPt = new Point (0, 0, 0, false);
 
+                while (!done){
+                    // iterate through sorted list of trapezoids and find the x value that corresponds with this one
+                    // TODO binary search for O(n log n)
+                    for (Trapezoid t : trapezoids){
+                        if (nextPt.x == t.bl.x){
+                            // make sure y value corresponds
+                            if (nextPt.y < t.tl.y && nextPt.y > t.bl.y){
+                                // if end point is in this trapezoid, call that case and break
+                                if (s.end.x < t.br.y){
+                                    singleEnd();
+                                    done = true;
+                                } else { // otherwise call correct case and keep going
+                                    neitherPts();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
 
             //    find what trapezoid starting point is in
             //    do 4 cases based on if it hits a vertical line
