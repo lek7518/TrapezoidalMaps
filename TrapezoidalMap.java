@@ -226,7 +226,13 @@ public class TrapezoidalMap {
         return result;
     }
 
-
+    /*
+     *
+     *
+     * *********   MAIN   *********
+     *
+     *
+     */
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length != 1){
             System.out.println("Usage: ./TrapezoidalMap \"input.txt\"");
@@ -241,7 +247,7 @@ public class TrapezoidalMap {
                 new Point(0, Integer.parseInt(startingBox[2]), Integer.parseInt(startingBox[3]), false)
         };
 
-        List<Segment> segments = new ArrayList<Segment>();
+        List<Segment> segments = new ArrayList<>();
         int id = 1;
         while (scan.hasNextLine()){
             String[] line = scan.nextLine().split(" ");
@@ -315,7 +321,7 @@ public class TrapezoidalMap {
                     }
                 }
 
-                Point nextPt = new Point (0, 0, 0, false);
+                Point nextPt = new Point (0, 0, 0, false); //TODO
 
                 while (!done){
                     // iterate through sorted list of trapezoids and find the x value that corresponds with this one
@@ -342,6 +348,7 @@ public class TrapezoidalMap {
             //    add info to adjacency matrix
         }
 
+        generateOutput(adjMatrix);
     }
 
     public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
@@ -368,7 +375,8 @@ public class TrapezoidalMap {
                     (crossProduct(currTrapezoid.tl, currTrapezoid.tr, queryPoint) < 0) ||
                     (crossProduct(currTrapezoid.tr, currTrapezoid.br, queryPoint) < 0) ||
                     (crossProduct(currTrapezoid.br, currTrapezoid.bl, queryPoint) < 0)) {
-                        continue;
+                        //continue;
+                        inTrapezoids.add(currTrapezoid); //TODO added this line because this checks if point is inside, as does the else case
                     }
                 else {
                     // If none of above are true, then it is inside trapezoid and we can quit
@@ -392,8 +400,9 @@ public class TrapezoidalMap {
         // Get set of all IDs used in the entire 
         for (String key : am.keySet()) {
             allIdsSet.add(key);
-            for (String parentId : am.get(key)) {
-                allIdsSet.add(parentId);
+            ArrayList<String> parentIds = am.get(key);
+            if (parentIds != null){
+                allIdsSet.addAll(parentIds);
             }
         }
 
@@ -438,7 +447,7 @@ public class TrapezoidalMap {
                         // Each object is either a parent or not
 
                         // True if you are a parent
-                        if (currIdsParents.contains(possibleParent)) {
+                        if (currIdsParents != null && currIdsParents.contains(possibleParent)) {
                             rowSum++;
                             rowString = rowString + "1,";
 
@@ -464,7 +473,12 @@ public class TrapezoidalMap {
             // Write column sum row
             String footerString = "Sum,";
             for (String rowId: allIdsList) {
-                footerString = footerString + Integer.toString(columnSums.get(rowId)) + ",";
+                Integer rid = columnSums.get(rowId);
+                if (rid != null) {
+                    footerString = footerString + rid + ",";
+                } else {
+                    footerString = footerString + "0,";
+                }
             }
             writer.write(footerString);
             writer.newLine();
