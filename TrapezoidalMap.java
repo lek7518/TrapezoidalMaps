@@ -66,7 +66,7 @@ public class TrapezoidalMap {
 
         // The trapezoid we are in will be split into 3 trapezoids
         String currTid = "T" + inTrap.tid;
-        am.put("P" + seg.start.id, am.get(currTid));
+        am.put("P" + seg.id, am.get(currTid));
         am.remove(currTid);
 
         // Trapezoid to left of start point
@@ -204,7 +204,27 @@ public class TrapezoidalMap {
     }
 
     // Case 3: Neither start nor end point are in this trapezoid
-    public static void neitherPts(Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> adjMatrix){}
+    public static ArrayList<Trapezoid> neitherPts(
+            Trapezoid inTrap, Segment seg, HashMap<String, ArrayList<String>> am){
+
+        Point leftSegBorder = new Point(0, inTrap.bl.x, calculateY(seg.start, seg.end, inTrap.bl.x), false);
+        Point rightSegBorder = new Point(0, inTrap.br.x, calculateY(seg.start, seg.end, inTrap.br.x), false);
+
+        String currTid = "T" + inTrap.tid;
+        am.put("S" + seg.id, am.get(currTid));
+        am.remove(currTid);
+
+        Trapezoid x = new Trapezoid(getFreshId(), leftSegBorder, inTrap.tl, inTrap.tr, rightSegBorder);
+        addToAM("T" + x.tid, "S" + seg.id, am);
+
+        Trapezoid y = new Trapezoid(getFreshId(), inTrap.bl, leftSegBorder, rightSegBorder, inTrap.br);
+        addToAM("T" + y.tid, "S" + seg.id, am);
+
+        ArrayList<Trapezoid> result = new ArrayList<>();
+        result.add(x);
+        result.add(y);
+        return result;
+    }
 
 
     public static void main(String[] args) throws FileNotFoundException {
