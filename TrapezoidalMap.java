@@ -9,8 +9,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Collections;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class TrapezoidalMap {
     public record Point (int id, double x, double y, boolean isStart){}
@@ -31,7 +36,7 @@ public class TrapezoidalMap {
         if (!adjMatrix.containsKey(id)){ // TODO all should be new, shouldn't need this check
             adjMatrix.put(id, new ArrayList<>());
         }
-        adjMatrix.get(id).add(pid);
+        adjMatrix.get(id).add(pid); // TODO does this really change the map? Do we need to 'put' the value back
     }
 
     public static double calculateSlope(Point p1, Point p2){
@@ -359,4 +364,95 @@ public class TrapezoidalMap {
     public static double crossProduct(Point a, Point b, Point p) {
         return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
     }
+
+    public static void generateOutput(HashMap<String, ArrayList<String>> am) {
+
+        HashSet<String> allIdsSet = new HashSet<>();
+
+        // Get set of all IDs used in the entire 
+        for (String key : am.keySet()) {
+            allIdsSet.add(key);
+            for (String parentId : am.get(key)) {
+                allIdsSet.add(parentId);
+            }
+        }
+
+        // Sort them in order of P, Q, S, T
+        ArrayList<String> allIdsList = new ArrayList<>(allIdsSet);
+        Collections.sort(allIdsList);
+        int numRows = allIdsList.size();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("adjacency_matrix.csv"))) {
+
+            // Write Header row
+            String headerString = ",";
+            for (String rowId: allIdsList) {
+                headerString = headerString + rowId + ",";
+            }
+            headerString = headerString + "Sum";
+            writer.write(headerString);
+            writer.newLine();
+
+            // Go through each id and create the row for that ID
+            HashMap<String, Integer> columnSums = new HashMap<>();
+            for (String rowId : allIdsList) {
+                
+                // If not present in keyset, you are the root node
+                if (!am.keySet().contains(rowId)) {
+                    String rowString = rowId + ",";
+                    for (int i = 0; i < numRows; i++) {
+                        rowString = rowString + "0,";
+                    }
+                    // Row sum will be 0 for root node
+                    rowString = rowString + "0";
+                    writer.write(rowString);
+                    writer.newLine();
+                }
+
+                // If not root node, you are a child node
+                else {
+                    ArrayList<String> currIdsParents = am.get(rowId);
+                    int rowSum = 0;
+                    String rowString = rowId + ",";
+                    for (String possibleParent : allIdsList) {
+                        // Each object is either a parent or not
+
+                        // True if you are a parent
+                        if (currIdsParents.contains(possibleParent)) {
+                            rowSum++;
+                            rowString = rowString + "1,";
+
+                            // Keep track of how many times each id was a parent
+                            Integer currColCount = columnSums.get(possibleParent);
+                            if (currColCount == null) {
+                                columnSums.put(possibleParent, 1);
+                            }
+                            else{
+                                columnSums.put(possibleParent, currColCount + 1);
+                            }
+                        }
+                        else {
+                            rowString = rowString + "0,";
+                        }
+                    }
+                    rowString = rowString + Integer.toString(rowSum);
+                    writer.write(rowString);
+                    writer.newLine();
+                }
+            }
+
+            // Write column sum row
+            String footerString = "Sum,";
+            for (String rowId: allIdsList) {
+                footerString = footerString + Integer.toString(columnSums.get(rowId)) + ",";
+            }
+            writer.write(footerString);
+            writer.newLine();
+
+        } catch (IOException e) {
+            System.err.println("Error writing to csv file: " + e.getMessage());
+            e.printStackTrace();;
+        }
+    }
+
 }
