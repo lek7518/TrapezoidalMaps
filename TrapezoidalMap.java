@@ -220,7 +220,13 @@ public class TrapezoidalMap {
         Point rightSegBorder = new Point(0, inTrap.br.x, calculateY(seg.start, seg.end, inTrap.br.x), false);
 
         String currTid = "T" + inTrap.tid;
-        am.put("S" + seg.id, am.get(currTid));
+        if (am.containsKey("S" + seg.id)){
+            if (am.get(currTid) != null){
+                am.get("S" + seg.id).addAll(am.get(currTid));
+            }
+        } else {
+            am.put("S" + seg.id, am.get(currTid));
+        }
         am.remove(currTid);
 
         Trapezoid x = new Trapezoid(getFreshId(), leftSegBorder, inTrap.tl, inTrap.tr, rightSegBorder);
@@ -349,11 +355,13 @@ public class TrapezoidalMap {
                         // make sure y value corresponds
                         if (nextPt.y < t.tl.y && nextPt.y > t.bl.y){
                             // if end point is in this trapezoid, call that case and break
-                            if (s.end.x < t.br.y){
-                                singleEnd(t, s, adjMatrix);
+                            if (s.end.x < t.br.x){
+                                trapezoids.addAll(singleEnd(t, s, adjMatrix));
+                                removeTrapezoid(t.tid, trapezoids);
                                 done = true;
                             } else { // otherwise call correct case and keep going
-                                neitherPts(t, s, adjMatrix);
+                                trapezoids.addAll(neitherPts(t, s, adjMatrix));
+                                removeTrapezoid(t.tid, trapezoids);
                             }
                             break;
                         }
