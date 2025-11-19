@@ -7,12 +7,7 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Collections;
+import java.util.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -368,10 +363,6 @@ public class TrapezoidalMap {
                     }
                 }
             }
-
-            //    find what trapezoid starting point is in
-            //    do 4 cases based on if it hits a vertical line
-            //    add info to adjacency matrix
         }
 
         generateOutput(adjMatrix);
@@ -434,7 +425,22 @@ public class TrapezoidalMap {
 
         // Sort them in order of P, Q, S, T
         ArrayList<String> allIdsList = new ArrayList<>(allIdsSet);
-        Collections.sort(allIdsList);
+        allIdsList.sort(new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                int cmp = o1.substring(0, 1).compareTo(o2.substring(0, 1));
+                if (cmp == 0){
+                    if (o1.length() < 2 && o2.length() < 2){return 0;}
+                    if (o1.length() < 2){return -1;}
+                    if (o2.length() < 2){return 1;}
+                    int id1 = Integer.parseInt(o1.substring(1));
+                    int id2 = Integer.parseInt(o2.substring(1));
+                    return Integer.compare(id1, id2);
+                } else {
+                    return cmp;
+                }
+            }
+        });
         int numRows = allIdsList.size();
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("adjacency_matrix.csv"))) {
