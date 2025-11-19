@@ -370,13 +370,13 @@ public class TrapezoidalMap {
             }
 
             else {
-                // Check if inside the current trapezoid
-                if ((crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.tl, currTrapezoid.tr, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.tr, currTrapezoid.br, queryPoint) < 0) ||
-                    (crossProduct(currTrapezoid.br, currTrapezoid.bl, queryPoint) < 0)) {
-                        //continue;
-                        inTrapezoids.add(currTrapezoid); //TODO added this line because this checks if point is inside, as does the else case
+                // Check if outside the current trapezoid
+                if ((crossProduct(currTrapezoid.bl, currTrapezoid.tl, queryPoint) > 0) ||
+                    (crossProduct(currTrapezoid.tl, currTrapezoid.tr, queryPoint) > 0) ||
+                    (crossProduct(currTrapezoid.tr, currTrapezoid.br, queryPoint) > 0) ||
+                    (crossProduct(currTrapezoid.br, currTrapezoid.bl, queryPoint) > 0)) {
+                        continue;
+                        //inTrapezoids.add(currTrapezoid); //TODO added this line because this checks if point is inside, as does the else case
                     }
                 else {
                     // If none of above are true, then it is inside trapezoid and we can quit
