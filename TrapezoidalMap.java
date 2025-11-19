@@ -25,7 +25,7 @@ public class TrapezoidalMap {
     // trapezoid id and 4 Points of a trapezoid in clockwise order, starting at bottom left
     public record Trapezoid (int tid, Point bl, Point tl, Point tr, Point br) {}
 
-    public static int currTrapezoidId = 1;
+    public static int currTrapezoidId = 0;
 
     public static int getFreshId(){
         currTrapezoidId += 1;
@@ -37,6 +37,15 @@ public class TrapezoidalMap {
             adjMatrix.put(id, new ArrayList<>());
         }
         adjMatrix.get(id).add(pid);
+    }
+
+    public static void removeTrapezoid(int tid, ArrayList<Trapezoid> trapezoids){
+        for (int t = 0; t < trapezoids.size(); t++){
+            if (trapezoids.get(t).tid == tid){
+                trapezoids.remove(t);
+                break;
+            }
+        }
     }
 
     public static double calculateSlope(Point p1, Point p2){
@@ -173,7 +182,7 @@ public class TrapezoidalMap {
         addToAM("Q" + seg.id, "P" + seg.id, am);
 
         Trapezoid x = new Trapezoid(getFreshId(),
-                new Point(0, seg.start.x, bry, false),
+                new Point(0, seg.end.x, bry, false),
                 new Point(0, seg.end.x, tr_y, false),
                 inTrap.tr,
                 inTrap.br);
@@ -281,9 +290,11 @@ public class TrapezoidalMap {
                 startT = startTraps.get(0);
                 if (s.end.x < startT.br.x) {
                     trapezoids.addAll(bothPts(startT, s, adjMatrix));
+                    removeTrapezoid(startT.tid, trapezoids);
                     done = true;
                 } else {
                     trapezoids.addAll(singleStart(startT, s, adjMatrix));
+                    removeTrapezoid(startT.tid, trapezoids);
                 }
             } else {
                 // get the correct trapezoid when there are multiple
@@ -315,9 +326,11 @@ public class TrapezoidalMap {
 
                 if (s.end.x < startT.br.x) {
                     trapezoids.addAll(singleEnd(startT, s, adjMatrix));
+                    removeTrapezoid(startT.tid, trapezoids);
                     done = true;
                 } else {
                     trapezoids.addAll(neitherPts(startT, s, adjMatrix));
+                    removeTrapezoid(startT.tid, trapezoids);
                 }
             }
 
