@@ -36,7 +36,7 @@ public class TrapezoidalMap {
         if (!adjMatrix.containsKey(id)){ // TODO all should be new, shouldn't need this check
             adjMatrix.put(id, new ArrayList<>());
         }
-        adjMatrix.get(id).add(pid); // TODO does this really change the map? Do we need to 'put' the value back
+        adjMatrix.get(id).add(pid);
     }
 
     public static double calculateSlope(Point p1, Point p2){
@@ -96,9 +96,9 @@ public class TrapezoidalMap {
         addToAM("T" + z.tid, "S" + seg.id, am);
 
         ArrayList<Trapezoid> result = new ArrayList<>();
-        result.add(z);
-        result.add(y);
         result.add(x);
+        result.add(y);
+        result.add(z);
         return result;
     }
 
@@ -142,9 +142,9 @@ public class TrapezoidalMap {
         addToAM("T" + z.tid, "S" + seg.id, am);
 
         ArrayList<Trapezoid> result = new ArrayList<>();
-        result.add(z);
-        result.add(y);
         result.add(x);
+        result.add(y);
+        result.add(z);
         return result;
         }
 
@@ -166,15 +166,15 @@ public class TrapezoidalMap {
         Trapezoid u = new Trapezoid(getFreshId(),
                 inTrap.bl,
                 inTrap.tl,
-                new Point(0, seg.start.x, tly, false), //todo
-                new Point(0, seg.start.x, bly, false)); //todo
+                new Point(0, seg.start.x, tly, false),
+                new Point(0, seg.start.x, bly, false));
         addToAM("T" + u.tid, "P" + seg.id, am);
 
         addToAM("Q" + seg.id, "P" + seg.id, am);
 
         Trapezoid x = new Trapezoid(getFreshId(),
-                new Point(0, seg.start.x, bry, false),  //todo
-                new Point(0, seg.end.x, tr_y, false), //todo
+                new Point(0, seg.start.x, bry, false),
+                new Point(0, seg.end.x, tr_y, false),
                 inTrap.tr,
                 inTrap.br);
         addToAM("T" + x.tid, "Q" + seg.id, am);
@@ -197,9 +197,9 @@ public class TrapezoidalMap {
 
         ArrayList<Trapezoid> result = new ArrayList<>();
         result.add(u);
-        result.add(z);
-        result.add(y);
         result.add(x);
+        result.add(y);
+        result.add(z);
         return result;
     }
 
@@ -275,73 +275,78 @@ public class TrapezoidalMap {
         // TODO If segment start or end point on trap x-boundary, and seg goes through whole trap, should be case 3
         for (Segment s : segments) {
             boolean done = false;
-                ArrayList<Trapezoid> startTraps = inWhatTrapezoid(s.start, trapezoids);
-                Trapezoid startT;
+            ArrayList<Trapezoid> startTraps = inWhatTrapezoid(s.start, trapezoids);
+            Trapezoid startT;
+            if (startTraps.size() == 1) {
+                startT = startTraps.get(0);
+                if (s.end.x < startT.br.x) {
+                    trapezoids.addAll(bothPts(startT, s, adjMatrix));
+                    done = true;
+                } else {
+                    trapezoids.addAll(singleStart(startT, s, adjMatrix));
+                }
+            } else {
+                // get the correct trapezoid when there are multiple
+                for (Trapezoid t : startTraps) {
+                    if (t.bl.x != s.start.x) {
+                        startTraps.remove(t);
+                    }
+                }
                 if (startTraps.size() == 1) {
                     startT = startTraps.get(0);
-                    if (s.end.x < startT.br.x) {
-                        bothPts(startT, s, adjMatrix); // TODO add these returned trapezoids to the trapezoid list
-                        done = true;
+                } else {
+                    Trapezoid bottom;
+                    Trapezoid top;
+                    if (startTraps.get(0).tl.y < startTraps.get(1).tl.y) {
+                        bottom = startTraps.get(0);
+                        top = startTraps.get(1);
                     } else {
-                        singleStart(startT, s, adjMatrix);
+                        bottom = startTraps.get(1);
+                        top = startTraps.get(0);
                     }
-                } else {    // TODO I don't think we are calling the case here once we find the trapezoid
-                    // get the correct trapezoid when there are multiple
-                    for (Trapezoid t : startTraps) {
-                        if (t.bl.x != s.start.x) {
-                            startTraps.remove(t);
-                        }
-                    }
-                    if (startTraps.size() == 1) {
-                        startT = startTraps.get(0);
+                    double slope = calculateSlope(bottom.tr, bottom.tl);
+                    double slopeOfS = calculateSlope(s.start, s.end);
+                    if (slope > slopeOfS) {
+                        startT = bottom;
                     } else {
-                        Trapezoid bottom;
-                        Trapezoid top;
-                        if (startTraps.get(0).tl.y < startTraps.get(1).tl.y) {
-                            bottom = startTraps.get(0);
-                            top = startTraps.get(1);
-                        } else {
-                            bottom = startTraps.get(1);
-                            top = startTraps.get(0);
-                        }
-                        double slope = calculateSlope(bottom.br, bottom.bl);    // TODO I think this logic may be wrong
-                        double slopeOfS = calculateSlope(s.start, s.end);
-                        if (slope > slopeOfS) {
-                            startT = bottom;
-                        } else {
-                            startT = top;
-                        }
-                    }
-
-                    if (s.end.x < startT.br.x) {
-                        singleEnd(startT, s, adjMatrix);
-                        done = true;
-                    } else {
-                        neitherPts(startT, s, adjMatrix);
+                        startT = top;
                     }
                 }
 
-                Point nextPt = new Point (0, 0, 0, false); //TODO
+                if (s.end.x < startT.br.x) {
+                    trapezoids.addAll(singleEnd(startT, s, adjMatrix));
+                    done = true;
+                } else {
+                    trapezoids.addAll(neitherPts(startT, s, adjMatrix));
+                }
+            }
 
-                while (!done){
-                    // iterate through sorted list of trapezoids and find the x value that corresponds with this one
-                    // TODO binary search for O(n log n)
-                    for (Trapezoid t : trapezoids){
-                        if (nextPt.x == t.bl.x){
-                            // make sure y value corresponds
-                            if (nextPt.y < t.tl.y && nextPt.y > t.bl.y){
-                                // if end point is in this trapezoid, call that case and break
-                                if (s.end.x < t.br.y){
-                                    singleEnd(t, s, adjMatrix);
-                                    done = true;
-                                } else { // otherwise call correct case and keep going
-                                    neitherPts(t, s, adjMatrix);
-                                }
-                                break;
+            while (!done){
+                Trapezoid nextTrap = trapezoids.getLast();
+                Point nextPt = nextTrap.tr; // next starting point
+                if (nextPt.x == s.end.x && nextPt.y == s.end.y){
+                    done = true;
+                    break;
+                }
+                // iterate through sorted list of trapezoids and find the x value that corresponds with this one
+                // TODO sort trapezoids
+                // TODO binary search for O(n log n)
+                for (Trapezoid t : trapezoids){
+                    if (nextPt.x == t.bl.x){
+                        // make sure y value corresponds
+                        if (nextPt.y < t.tl.y && nextPt.y > t.bl.y){
+                            // if end point is in this trapezoid, call that case and break
+                            if (s.end.x < t.br.y){
+                                singleEnd(t, s, adjMatrix);
+                                done = true;
+                            } else { // otherwise call correct case and keep going
+                                neitherPts(t, s, adjMatrix);
                             }
+                            break;
                         }
                     }
                 }
+            }
 
             //    find what trapezoid starting point is in
             //    do 4 cases based on if it hits a vertical line
