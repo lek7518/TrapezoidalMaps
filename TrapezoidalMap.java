@@ -173,7 +173,7 @@ public class TrapezoidalMap {
         addToAM("Q" + seg.id, "P" + seg.id, am);
 
         Trapezoid x = new Trapezoid(getFreshId(),
-                new Point(0, seg.start.x, bry, false),
+                new Point(0, seg.end.x, bry, false),
                 new Point(0, seg.end.x, tr_y, false),
                 inTrap.tr,
                 inTrap.br);
