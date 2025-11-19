@@ -36,7 +36,7 @@ public class TrapezoidalMap {
         if (!adjMatrix.containsKey(id)){ // TODO all should be new, shouldn't need this check
             adjMatrix.put(id, new ArrayList<>());
         }
-        adjMatrix.get(id).add(pid); // TODO does this really change the map? Do we need to 'put' the value back
+        adjMatrix.get(id).add(pid);
     }
 
     public static double calculateSlope(Point p1, Point p2){
@@ -166,15 +166,15 @@ public class TrapezoidalMap {
         Trapezoid u = new Trapezoid(getFreshId(),
                 inTrap.bl,
                 inTrap.tl,
-                new Point(0, seg.start.x, tly, false), //todo
-                new Point(0, seg.start.x, bly, false)); //todo
+                new Point(0, seg.start.x, tly, false),
+                new Point(0, seg.start.x, bly, false));
         addToAM("T" + u.tid, "P" + seg.id, am);
 
         addToAM("Q" + seg.id, "P" + seg.id, am);
 
         Trapezoid x = new Trapezoid(getFreshId(),
-                new Point(0, seg.start.x, bry, false),  //todo
-                new Point(0, seg.end.x, tr_y, false), //todo
+                new Point(0, seg.start.x, bry, false),
+                new Point(0, seg.end.x, tr_y, false),
                 inTrap.tr,
                 inTrap.br);
         addToAM("T" + x.tid, "Q" + seg.id, am);
@@ -285,7 +285,7 @@ public class TrapezoidalMap {
                     } else {
                         singleStart(startT, s, adjMatrix);
                     }
-                } else {    // TODO I don't think we are calling the case here once we find the trapezoid
+                } else {
                     // get the correct trapezoid when there are multiple
                     for (Trapezoid t : startTraps) {
                         if (t.bl.x != s.start.x) {
@@ -304,7 +304,7 @@ public class TrapezoidalMap {
                             bottom = startTraps.get(1);
                             top = startTraps.get(0);
                         }
-                        double slope = calculateSlope(bottom.br, bottom.bl);    // TODO I think this logic may be wrong
+                        double slope = calculateSlope(bottom.tr, bottom.tl); 
                         double slopeOfS = calculateSlope(s.start, s.end);
                         if (slope > slopeOfS) {
                             startT = bottom;
