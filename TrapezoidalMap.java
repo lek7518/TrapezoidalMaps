@@ -375,6 +375,17 @@ public class TrapezoidalMap {
         }
 
         generateOutput(adjMatrix);
+
+        // Ask for user input to test query point
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Please enter an x-value: ");
+        double queryX = scanner.nextDouble();
+        System.out.print("Please enter an y-value: ");
+        double queryY = scanner.nextDouble();
+
+        Point queryPoint = new Point(0, queryX, queryY, false);
+        String path = queryPointPath(queryPoint, trapezoids, adjMatrix)
+        System.out.println(path)
     }
 
     public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
@@ -513,6 +524,57 @@ public class TrapezoidalMap {
             System.err.println("Error writing to csv file: " + e.getMessage());
             e.printStackTrace();;
         }
+    }
+
+    public static void queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
+
+        ArrayList<Trapezoid> containsQueryPoint = inWhatTrapezoid(queryPoint, trapezoids);
+        if (containsQueryPoint.size() == 0) {
+            return null;
+        }
+
+        Trapezoid startTrap = containsQueryPoint.get(0);
+        String startNode = "T" + t.tid;
+
+        HashMap<String, String> parentMap = new HashMap<>();
+        ArrayDeque<String> queue = new ArrayDeque<>();
+        HashSet<String> visited = new HashSet<>();
+
+        queue.add(startNode);
+        visited.add(startNode);
+
+        String rootFound = null;
+
+        while (!queue.isEmpty()) {
+            String curr = queue.remove();
+            ArrayList<String> parents = am.get(curr);
+
+            if (parents == null) {
+                rootFound = curr;
+                break;
+            }
+
+            for (String p : parents) {
+                if (!visited.contais(p)) {
+                    visited.add(p);
+                    queue.add(p);
+                    parentMap.put(p, curr);
+                }
+            }
+        }
+
+        ArrayList<paath = new ArrayList<>();
+        String step = rootFound;
+
+        while (true) {
+            path.add(step);
+            if (!parentsMap.containsKey(step)) {
+                break;
+            }
+            step = parentMap.get(step);
+        }
+
+        return String.join(" ", path);
     }
 
 }
