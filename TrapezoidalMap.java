@@ -336,7 +336,7 @@ public class TrapezoidalMap {
             }
 
             while (!done){
-                Trapezoid nextTrap = trapezoids.getLast();
+                Trapezoid nextTrap = trapezoids.get(trapezoids.size() - 1);
                 Point nextPt = nextTrap.tr; // next starting point
                 if (nextPt.x == s.end.x && nextPt.y == s.end.y){
                     done = true;
@@ -375,8 +375,8 @@ public class TrapezoidalMap {
         double queryY = scanner.nextDouble();
 
         Point queryPoint = new Point(0, queryX, queryY, false);
-        String path = queryPointPath(queryPoint, trapezoids, adjMatrix)
-        System.out.println(path)
+        String path = queryPointPath(queryPoint, trapezoids, adjMatrix);
+        System.out.println(path);
     }
 
     public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
@@ -532,15 +532,15 @@ public class TrapezoidalMap {
         }
     }
 
-    public static void queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
+    public static String queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
 
         ArrayList<Trapezoid> containsQueryPoint = inWhatTrapezoid(queryPoint, trapezoids);
         if (containsQueryPoint.size() == 0) {
-            return null;
+            return "No Path Found";
         }
 
         Trapezoid startTrap = containsQueryPoint.get(0);
-        String startNode = "T" + t.tid;
+        String startNode = "T" + startTrap.tid;
 
         HashMap<String, String> parentMap = new HashMap<>();
         ArrayDeque<String> queue = new ArrayDeque<>();
@@ -561,7 +561,7 @@ public class TrapezoidalMap {
             }
 
             for (String p : parents) {
-                if (!visited.contais(p)) {
+                if (!visited.contains(p)) {
                     visited.add(p);
                     queue.add(p);
                     parentMap.put(p, curr);
@@ -569,12 +569,12 @@ public class TrapezoidalMap {
             }
         }
 
-        ArrayList<paath = new ArrayList<>();
+        ArrayList<String> path = new ArrayList<>();
         String step = rootFound;
 
         while (true) {
             path.add(step);
-            if (!parentsMap.containsKey(step)) {
+            if (!parentMap.containsKey(step)) {
                 break;
             }
             step = parentMap.get(step);
