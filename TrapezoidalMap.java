@@ -365,7 +365,7 @@ public class TrapezoidalMap {
             }
         }
 
-        generateOutput(adjMatrix);
+        HashMap<String, String> oneThruNIds = generateOutput(adjMatrix);
 
         // Ask for user input to test query point
         Scanner scanner = new Scanner(System.in);
@@ -375,8 +375,19 @@ public class TrapezoidalMap {
         double queryY = scanner.nextDouble();
 
         Point queryPoint = new Point(0, queryX, queryY, false);
-        String path = queryPointPath(queryPoint, trapezoids, adjMatrix);
-        System.out.println(path);
+        ArrayList<String> path = queryPointPath(queryPoint, trapezoids, adjMatrix);
+
+        if (path.size() == 1) {
+            System.out.println(path.get(0));
+        }
+        else {
+            String finalPath = "";
+            for (String pathId : path) {
+                finalPath = finalPath + oneThruNIds.get(pathId);
+                finalPath = finalPath + " ";
+            }
+            System.out.println(finalPath);
+        }
     }
 
     public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
@@ -418,7 +429,7 @@ public class TrapezoidalMap {
     } 
 
     public static HashMap<String, String> adjustIdMap(ArrayList<String> allIdsList){
-        HashMap<String, String> oneThruNIds = new HashMap();
+        HashMap<String, String> oneThruNIds = new HashMap<>();
         int currId = 1;
         for (String s : allIdsList) {
             String prefix = s.substring(0, 1);
@@ -436,7 +447,7 @@ public class TrapezoidalMap {
         return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
     }
 
-    public static void generateOutput(HashMap<String, ArrayList<String>> am) {
+    public static HashMap<String, String> generateOutput(HashMap<String, ArrayList<String>> am) {
 
         HashSet<String> allIdsSet = new HashSet<>();
 
@@ -548,13 +559,16 @@ public class TrapezoidalMap {
             System.err.println("Error writing to csv file: " + e.getMessage());
             e.printStackTrace();;
         }
+        return oneThruNIds;
     }
 
-    public static String queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
+    public static ArrayList<String> queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
 
         ArrayList<Trapezoid> containsQueryPoint = inWhatTrapezoid(queryPoint, trapezoids);
         if (containsQueryPoint.size() == 0) {
-            return "No Path Found";
+            ArrayList<String> badQuery = new ArrayList<>();
+            badQuery.add("Bad Query Point");
+            return badQuery;
         }
 
         Trapezoid startTrap = containsQueryPoint.get(0);
@@ -598,7 +612,7 @@ public class TrapezoidalMap {
             step = parentMap.get(step);
         }
 
-        return String.join(" ", path);
+        return path;
     }
 
 }
