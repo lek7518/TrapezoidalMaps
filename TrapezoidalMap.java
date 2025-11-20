@@ -406,6 +406,21 @@ public class TrapezoidalMap {
         return inTrapezoids;
     } 
 
+    public static HashMap<String, String> adjustIdMap(ArrayList<String> allIdsList){
+        HashMap<String, String> oneThruNIds = new HashMap();
+        int currId = 1;
+        for (String s : allIdsList) {
+            String prefix = s.substring(0, 1);
+            if (prefix.equals("T")) {
+                oneThruNIds.put(s, prefix + currId);
+                currId++;
+            } else {
+                oneThruNIds.put(s, s);
+            }
+        }
+        return oneThruNIds;
+    }
+
     public static double crossProduct(Point a, Point b, Point p) {
         return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
     }
@@ -443,12 +458,15 @@ public class TrapezoidalMap {
         });
         int numRows = allIdsList.size();
 
+        // Map IDs to 1...n IDs
+        HashMap<String, String> oneThruNIds = adjustIdMap(allIdsList);
+
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("adjacency_matrix.csv"))) {
 
             // Write Header row
             String headerString = ",";
             for (String rowId: allIdsList) {
-                headerString = headerString + rowId + ",";
+                headerString = headerString + oneThruNIds.get(rowId) + ",";
             }
             headerString = headerString + "Sum";
             writer.write(headerString);
@@ -460,7 +478,7 @@ public class TrapezoidalMap {
                 
                 // If not present in keyset, you are the root node
                 if (!am.keySet().contains(rowId)) {
-                    String rowString = rowId + ",";
+                    String rowString = oneThruNIds.get(rowId) + ",";
                     for (int i = 0; i < numRows; i++) {
                         rowString = rowString + "0,";
                     }
@@ -474,7 +492,7 @@ public class TrapezoidalMap {
                 else {
                     ArrayList<String> currIdsParents = am.get(rowId);
                     int rowSum = 0;
-                    String rowString = rowId + ",";
+                    String rowString = oneThruNIds.get(rowId) + ",";
                     for (String possibleParent : allIdsList) {
                         // Each object is either a parent or not
 
