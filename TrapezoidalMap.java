@@ -336,7 +336,7 @@ public class TrapezoidalMap {
             }
 
             while (!done){
-                Trapezoid nextTrap = trapezoids.getLast();
+                Trapezoid nextTrap = trapezoids.get(trapezoids.size() - 1);
                 Point nextPt = nextTrap.tr; // next starting point
                 if (nextPt.x == s.end.x && nextPt.y == s.end.y){
                     done = true;
@@ -366,6 +366,17 @@ public class TrapezoidalMap {
         }
 
         generateOutput(adjMatrix);
+
+        // Ask for user input to test query point
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Please enter an x-value: ");
+        double queryX = scanner.nextDouble();
+        System.out.print("Please enter an y-value: ");
+        double queryY = scanner.nextDouble();
+
+        Point queryPoint = new Point(0, queryX, queryY, false);
+        String path = queryPointPath(queryPoint, trapezoids, adjMatrix);
+        System.out.println(path);
     }
 
     public static ArrayList<Trapezoid> inWhatTrapezoid(Point queryPoint, ArrayList<Trapezoid> trapezoids) {
@@ -537,6 +548,57 @@ public class TrapezoidalMap {
             System.err.println("Error writing to csv file: " + e.getMessage());
             e.printStackTrace();;
         }
+    }
+
+    public static String queryPointPath(Point queryPoint, ArrayList<Trapezoid> trapezoids, HashMap<String, ArrayList<String>> am) {
+
+        ArrayList<Trapezoid> containsQueryPoint = inWhatTrapezoid(queryPoint, trapezoids);
+        if (containsQueryPoint.size() == 0) {
+            return "No Path Found";
+        }
+
+        Trapezoid startTrap = containsQueryPoint.get(0);
+        String startNode = "T" + startTrap.tid;
+
+        HashMap<String, String> parentMap = new HashMap<>();
+        ArrayDeque<String> queue = new ArrayDeque<>();
+        HashSet<String> visited = new HashSet<>();
+
+        queue.add(startNode);
+        visited.add(startNode);
+
+        String rootFound = null;
+
+        while (!queue.isEmpty()) {
+            String curr = queue.remove();
+            ArrayList<String> parents = am.get(curr);
+
+            if (parents == null) {
+                rootFound = curr;
+                break;
+            }
+
+            for (String p : parents) {
+                if (!visited.contains(p)) {
+                    visited.add(p);
+                    queue.add(p);
+                    parentMap.put(p, curr);
+                }
+            }
+        }
+
+        ArrayList<String> path = new ArrayList<>();
+        String step = rootFound;
+
+        while (true) {
+            path.add(step);
+            if (!parentMap.containsKey(step)) {
+                break;
+            }
+            step = parentMap.get(step);
+        }
+
+        return String.join(" ", path);
     }
 
 }
